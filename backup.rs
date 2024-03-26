@@ -1,7 +1,6 @@
 // These are my old codes and i still use these files !
-// I cant just copy paste since i code on multiple systems and laptops .... 
-// Thats why im keeping an backup here ! 
-// All commented codes are malware related ! ... please viist https://github.com/Whitecat18/Rust-for-Malware-Development for completed codes !!
+// 
+
 // use winapi::um::errhandlingapi::GetLastError;
 // use winapi::um::winnls::GetGeoInfoA;
 
@@ -3935,34 +3934,274 @@ winapi = { version = "0.3", features = ["minwindef", "winbase"] }
 
 // actual implementation ! 
 
-use std::{mem,ptr::null_mut};
+// use std::{mem,ptr::null_mut};
 
-use winapi::um::{handleapi::CloseHandle, processthreadsapi::{GetCurrentProcess, OpenProcessToken}, winbase::LookupPrivilegeValueA, winnt::{LUID_AND_ATTRIBUTES, SE_PRIVILEGE_ENABLED, TOKEN_ADJUST_PRIVILEGES, TOKEN_PRIVILEGES, TOKEN_QUERY}};
-use windows::Win32::Security::AdjustTokenPrivileges;
+// use winapi::um::{handleapi::CloseHandle, processthreadsapi::{GetCurrentProcess, OpenProcessToken}, winbase::LookupPrivilegeValueA, winnt::{HANDLE, LUID_AND_ATTRIBUTES, SE_PRIVILEGE_ENABLED, TOKEN_ADJUST_PRIVILEGES, TOKEN_PRIVILEGES, TOKEN_QUERY}};
+// use windows::Win32::Security::AdjustTokenPrivileges;
 
-fn set_debug_token() -> bool{
-    unsafe{
-        let mut token= null_mut();
-        let mut token_privilages = TOKEN_PRIVILEGES{
-            PrivilegeCount: 1,
-            Privileges: [LUID_AND_ATTRIBUTES {Luid: mem::zeroed(), Attributes: 0}; 1],
-        };
+// fn set_debug_token() -> bool{
+//     unsafe{
+//         let mut token:HANDLE = null_mut();
+//         // let mut token_privilages = TOKEN_PRIVILEGES{
+//         //     PrivilegeCount: 1,
+//         //     Privileges: [LUID_AND_ATTRIBUTES {Luid: mem::zeroed(), Attributes: 0}; 1],
+//         // };
     
-        if OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &mut token) != 0{
-            if LookupPrivilegeValueA(null_mut(),b"SeDebugPrivilege\0".as_ptr() as *const i8, &mut token_privilages.Privileges[0].Luid) != 0{
-                token_privilages.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+//         if OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &mut token) != 0{
+//             if LookupPrivilegeValueA(null_mut(),b"SeDebugPrivilege\0".as_ptr() as *const i8, &mut token_privilages.Privileges[0].Luid) != 0{
+//                 token_privilages.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
                 
-                if AdjustTokenPrivileges(token, 0, &mut token_privilages, mem::size_of_val(&token_privilages) as u32, None, None) !=0{
-                    CloseHandle(token);
-                    return true;
-                }
-            }
-            CloseHandle(token);
-        }
-    }
-    false
+//                 if AdjustTokenPrivileges(token, false, &mut token_privilages, mem::size_of::<TOKEN_PRIVILEGES>() as u32, None, None) !=0{
+//                     CloseHandle(token);
+//                     return true;
+//                 }
+//             }
+//             CloseHandle(token);
+//         }
+//     }
+//     false
+// }
+
+// fn main(){
+    
+// }
+
+// WInAPI's That you need to import 
+// * securitybaseapi
+
+// #[allow(unused_assignments)]
+
+// use winapi::ctypes::c_void;// use std::mem;
+// use std::mem;
+// use std::ptr::{null,null_mut};
+// use std::io::Error;
+// use winapi::um::winnt::{TokenElevation, TokenPrivileges, PRIVILEGE_SET_ALL_NECESSARY, PTOKEN_PRIVILEGES, TOKEN_ELEVATION};
+// use winapi::um::{handleapi::CloseHandle, processthreadsapi::{GetCurrentProcess, OpenProcessToken}, winbase::LookupPrivilegeValueA, winnt::{LUID, SE_DEBUG_NAME, SE_PRIVILEGE_ENABLED, TOKEN_ADJUST_PRIVILEGES, TOKEN_PRIVILEGES, TOKEN_QUERY}};
+// // use windows::Win32::Security::AdjustTokenPrivileges;
+// use winapi::shared::ntdef::HANDLE;
+// use winapi::um::securitybaseapi::{AdjustTokenPrivileges, GetTokenInformation, PrivilegeCheck};
+// use winapi::um::winnt::PRIVILEGE_SET;
+// // use windows::Win32::Security::{PRIVILEGE_SET, TOKEN_PRIVILEGES_ATTRIBUTES};
+// use winapi::um::winbase::LookupPrivilegeNameA;
+// use std::ffi::CString;
+
+// fn set_debug_token() -> Result<(), Error>{
+//     unsafe{
+//         let mut h_token:HANDLE = null_mut();
+//         if OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &mut h_token) != 0{
+//             let mut luid: LUID = std::mem::zeroed();
+//                                                         // or b"SeDebugPrivilege\0".as_ptr()
+//             if LookupPrivilegeValueA(null(), SE_DEBUG_NAME.as_ptr() as *const i8, &mut luid) != 0 {
+//                 let mut token_privilages: TOKEN_PRIVILEGES = std::mem::zeroed();
+//                 token_privilages.PrivilegeCount = 1;
+//                 token_privilages.Privileges[0].Luid = luid;
+//                 token_privilages.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+//                 if AdjustTokenPrivileges(h_token, 0,  &mut token_privilages, mem::size_of::<TOKEN_PRIVILEGES>() as u32, null_mut(), null_mut()) != 0{
+//                     CloseHandle(h_token);
+//                     return Ok(())
+//                 }
+//             }
+//             CloseHandle(h_token);
+//         } 
+//         Err(Error::last_os_error())
+//     }
+// }
+
+// fn check_debug_privileges() -> Result<bool, Error>{
+//     unsafe{
+//         let mut luid: LUID = mem::zeroed();
+//         if LookupPrivilegeValueA(null(), SE_DEBUG_NAME.as_ptr() as *const i8,&mut luid) != 0{
+//             let mut privs: PRIVILEGE_SET = std::mem::zeroed();
+//             let mut b_result: i32 = 0;
+//             let mut h_token: *mut c_void = null_mut();
+//             if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut h_token) != 0{
+//                 privs.PrivilegeCount = 1;
+//                 privs.Control = PRIVILEGE_SET_ALL_NECESSARY; // u32
+//                 privs.Privilege[0].Luid = luid;
+//                 privs.Privilege[0].Attributes = SE_PRIVILEGE_ENABLED; //TOKEN_PRIVILEGES_ATTRIBUTES
+//                 PrivilegeCheck(h_token, &mut privs, &mut b_result);
+//                 CloseHandle(h_token); 
+//                 return Ok(b_result != 0);
+//             }
+//         }
+//         Err(Error::last_os_error())
+//     }
+// }
+
+// fn get_privileges() -> Result<(), Error>{
+//     unsafe{
+//         let mut h_token: HANDLE = null_mut();
+//         if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut h_token) != 0{
+//             let mut token_elevation: TOKEN_ELEVATION = std::mem::zeroed(); 
+//             let mut cb_size: u32 = mem::size_of::<TOKEN_ELEVATION>() as u32;
+//             let mut tp_size: u32 = 0;
+//             #[allow(unused_assignments)]
+//             let mut length: u32 = 0;
+//             let mut name: [i8; 256] = [0;256];
+
+//             GetTokenInformation(h_token, TokenPrivileges, null_mut(), 0, &mut tp_size);
+//             // let mut
+//             let ptoken_privileges: PTOKEN_PRIVILEGES = Vec::<c_void>::with_capacity(tp_size as usize).as_mut_ptr() as PTOKEN_PRIVILEGES;
+
+//             if GetTokenInformation(h_token, TokenPrivileges, ptoken_privileges as *mut c_void, tp_size, &mut tp_size) != 0{
+//                 for i in 0..(*ptoken_privileges).PrivilegeCount{
+//                     length = 256;
+//                     LookupPrivilegeNameA(null(), &mut (*ptoken_privileges).Privileges[i as usize].Luid, name.as_mut_ptr(), &mut length);
+//                     if (*ptoken_privileges).Privileges[i as usize].Attributes == 3 {
+//                         println!("[+] {:<50} Enabled (Default)", CString::from_raw(name.as_mut_ptr()).into_string().unwrap());
+//                     } else if (*ptoken_privileges).Privileges[i as usize].Attributes == 2 {
+//                         println!("[+] {:<50} Enabled (Adjusted)", CString::from_raw(name.as_mut_ptr()).into_string().unwrap());
+//                     } else if (*ptoken_privileges).Privileges[i as usize].Attributes == 0 {
+//                         println!("[+] {:<50} Disabled", CString::from_raw(name.as_mut_ptr()).into_string().unwrap());
+//                     }
+//                 }
+//             }
+
+//             if GetTokenInformation(h_token, TokenElevation, &mut token_elevation as *mut TOKEN_ELEVATION as *mut c_void, mem::size_of::<TOKEN_ELEVATION>() as u32 , &mut cb_size) != 0{
+//                 if token_elevation.TokenIsElevated != 0{
+//                     println!("[+] Elevated");
+//                 } else {
+//                     println!("[-] Restricted");
+//                 }
+//             }
+//             CloseHandle(h_token);
+//             return Ok(());
+//         } else {
+//             Err(Error::last_os_error())
+//         }
+//     }
+// }
+
+// fn main() -> Result<(), Error>{
+//     get_privileges()?;
+//     if let Err(err) = set_debug_token(){
+//         return Err(err);
+//     }
+
+//     if let Ok(true) = check_debug_privileges(){
+//         println!("--- PRIVILEGES MODIFIED ---");
+//         get_privileges()?;
+//         Ok(())
+//     } else {
+//         Err(Error::last_os_error())
+//     }
+// }
+
+// use std::{ffi::OsStr, os::windows::ffi::OsStrExt, ptr::null_mut};
+// use ntapi::ntioapi::{self, NtOpenFile};
+// use winapi::um::winnt::FILE_GENERIC_READ;
+// use winapi::{ctypes::c_void, um::winnt::HANDLE};
+// use winapi::shared::ntdef::{NTSTATUS, NULL, OBJECT_ATTRIBUTES, OBJ_CASE_INSENSITIVE}; // i32
+// use winapi::shared::ntdef::PUNICODE_STRING;
+
+// fn spoof_image_loading(){
+//     unsafe{
+//         let module_name = OsStr::new(r"\\??\\C:\\windows\\system32\\advapi32.dll")
+//             .encode_wide().chain(Some(0).into_iter()).collect::<Vec<_>>();
+
+//         let mut file_handle: *mut c_void = null_mut();
+//         let mut section: *mut c_void = null_mut();
+//         let mut base_addr: *mut c_void = null_mut();
+        
+//         // long..addr
+//     //     let status: NTSTATUS = NtOpenFile(
+//     //         &mut file_handle,
+//     //         FILE_GENERIC_READ,
+//     //         &mut OBJECT_ATTRIBUTES{
+//     //             Length: std::mem::size_of::<OBJECT_ATTRIBUTES>() as u32,
+//     //             RootDirectory: NULL as HANDLE,
+//     //             ObjectName: PUNICODE_STRING{
+//     //                 Length: (module_name.len() * 2) as u16,
+//     //                 MaximumLength: ((module_name.len() + 1)* 2) as u16,
+//     //                 Buffer: module_name.as_ptr() as *mut _,
+//     //             },
+//     //             Attributes: OBJ_CASE_INSENSITIVE,
+//     //             SecurityDescriptor: null_mut(),
+//     //             SecurityQualityOfService: null_mut(),
+//     //         },
+            
+
+//     //         , ShareAccess, OpenOptions);
+//     // }
+//     let status: NTSTATUS = NtOpenFile(
+//         &mut file_handle,
+//         FILE_GENERIC_READ,
+//         &mut OBJECT_ATTRIBUTES {
+//             Length: std::mem::size_of::<OBJECT_ATTRIBUTES>() as u32,
+//             RootDirectory: NULL as HANDLE,
+//             ObjectName: PUNICODE_STRING{
+//                 Length: (module_name.len() * 2) as u16,
+//                 MaximumLength: ((module_name.len() + 1) * 2) as u16,
+//                 Buffer: module_name.as_ptr() as *mut _,
+//             },
+//             Attributes: OBJ_CASE_INSENSITIVE,
+//             SecurityDescriptor: ptr::null_mut(),
+//             SecurityQualityOfService: ptr::null_mut(),
+//         },
+//         &mut io::IoStatusBlock::default(),
+//         FILE_SHARE_READ,
+//         FILE_OPEN,
+//     );
+
+//     }
+// }
+// fn main(){
+//     // if !spoof_image_loading(){
+//     //     eprintln!("[-] Failed to spoof image loading");
+//     // }
+// }
+
+use winapi::shared::ntdef::HANDLE;
+use winapi::um::minwinbase::SECURITY_ATTRIBUTES;
+use ntapi::ntioapi::IO_STATUS_BLOCK;
+use winapi::shared::ntdef::NTSTATUS;
+use winapi::shared::ntdef::PVOID;
+use winapi::shared::ntdef::UNICODE_STRING;
+
+#[link(name = "ntdll")]
+extern "system" {
+    fn NtOpenFile(
+        FileHandle: *mut HANDLE,
+        DesiredAccess: u32,
+        ObjectAttributes: *mut SECURITY_ATTRIBUTES,
+        IoStatusBlock: *mut IO_STATUS_BLOCK,
+        ShareAccess: u32,
+        OpenOptions: u32,
+    ) -> NTSTATUS;
+    fn NtMapViewOfSection(
+        SectionHandle: HANDLE,
+        ProcessHandle: HANDLE,
+        BaseAddress: *mut PVOID,
+        ZeroBits: *mut usize,
+        CommitSize: usize,
+        SectionOffset: *mut winapi::um::winnt::LARGE_INTEGER,
+        ViewSize: *mut usize,
+        InheritDisposition: u32,
+        AllocationType: u32,
+        Protect: u32,
+    ) -> NTSTATUS;
+    fn NtCreateSection(
+        SectionHandle: *mut HANDLE,
+        DesiredAccess: u32,
+        ObjectAttributes: *mut SECURITY_ATTRIBUTES,
+        MaximumSize: *mut winapi::um::winnt::LARGE_INTEGER,
+        SectionPageProtection: u32,
+        AllocationAttributes: u32,
+        FileHandle: HANDLE,
+    ) -> NTSTATUS;
+    fn RtlInitUnicodeString(
+        DestinationString: *mut UNICODE_STRING,
+        SourceString: *const u16,
+    );
 }
 
+extern "system" {
+    // fn NtOpenFile(
+    //     FileHandle: *mut HANDLE,
+    //     DesiredAccess: u32,
+    //     ObjectAttributes: *mut SECURITY_ATTRIBUTES,
+    // )
+}
 fn main(){
-    
+ 
 }
